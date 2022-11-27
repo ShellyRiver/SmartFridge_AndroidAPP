@@ -156,26 +156,49 @@ fun sendGetRequest(userName:String, password:String) {
 
 @Composable
 private fun ItemCard(FridgeItem: MutableMap<String, String>, modifier: Modifier = Modifier) {
+    val itemImages = mapOf(
+        "apple" to painterResource(R.drawable.apple),
+        "banana" to painterResource(R.drawable.banana),
+        "tomato" to painterResource(R.drawable.tomato),
+        "broccoli" to painterResource(R.drawable.broccoli)
+    )
     Card(
         modifier = modifier
             .padding(2.dp)
             .fillMaxWidth()
     ) {
         Row {
-            Column() {
-                FridgeItem[itemKeys[TYPE]]?.let {
-                    Text(
-                        text = it,
-                        modifier = Modifier.padding(8.dp)
-                    )
+            Column(modifier = Modifier.width(180.dp)) {
+                Row {
+                    itemImages[FridgeItem[itemKeys[TYPE]]]?.let {
+                        Image(
+                            painter = it,
+                            contentDescription = "item image",
+                            modifier = Modifier
+                                .padding(5.dp)
+                                .width(33.dp)
+                        )
+                    }
+                    FridgeItem[itemKeys[TYPE]]?.let {
+                        Text(
+                            text = it,
+                            textAlign = TextAlign.Start,
+                            fontSize = 20.sp,
+                            modifier = Modifier
+                                .padding(4.dp)
+                        )
+                    }
                 }
+
                 FridgeItem[itemKeys[LEVEL]]?.let {
                     Text(
                         text = "Level: $it",
+                        fontSize = 14.sp,
                         modifier = Modifier.padding(8.dp)
                     )
                 }
             }
+
             Column() {
                 FridgeItem[itemKeys[IN_TIME]]?.let {
                     Text(
