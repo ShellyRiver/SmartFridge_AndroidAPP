@@ -1,0 +1,5 @@
+<resources>
+    <string name="app_name">Smart_Fridge</string>
+    <string name="greeting_text">Nice to meet you!</string>
+    <string name="greeting_intro">I\'m from Mars!</string>
+</resources>
