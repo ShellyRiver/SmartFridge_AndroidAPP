@@ -10,10 +10,13 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.*
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
@@ -30,6 +33,9 @@ import java.net.URLEncoder
 import kotlinx.serialization.*
 import kotlinx.serialization.json.Json
 import java.util.Date
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.zIndex
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -48,18 +54,21 @@ class MainActivity : ComponentActivity() {
     }
 }
 
-var get = true;
+val IPaddress = "192.168.137.1"
+
+var get = true
 var fridgeItems: MutableList<MutableMap<String, String>> = mutableListOf()   // the list of all items in the fridge
-val itemKeys = arrayOf("type", "in_time", "expire_dates", "level")
+val itemKeys = arrayOf("type", "in_time", "expire_dates", "level", "status")
 val TYPE = 0
 val IN_TIME = 1
 val EXPIRE_DATES = 2
 val LEVEL = 3
+val STATUS = 4
 
 var thread = Thread {
     try {
         while (true) {
-            if (get) sendGetRequest("a", "123")
+            if (get) sendGetRequest()
             get = false
             sleep(1000)
             Log.d("smartFridge-button", "thread set get = $get")
@@ -73,7 +82,7 @@ fun sendPostRequest(userName:String, password:String) {
 
     var reqParam = URLEncoder.encode("username", "UTF-8") + "=" + URLEncoder.encode(userName, "UTF-8")
     reqParam += "&" + URLEncoder.encode("password", "UTF-8") + "=" + URLEncoder.encode(password, "UTF-8")
-    val mURL = URL("http://192.168.10.51:8080/")
+    val mURL = URL("http://$IPaddress:8080/")
 
     with(mURL.openConnection() as HttpURLConnection) {
         // optional default is GET
@@ -99,12 +108,9 @@ fun sendPostRequest(userName:String, password:String) {
     }
 }
 
-fun sendGetRequest(userName:String, password:String) {
+fun sendGetRequest() {
 
-//    var reqParam = URLEncoder.encode("username", "UTF-8") + "=" + URLEncoder.encode(userName, "UTF-8")
-//    reqParam += "&" + URLEncoder.encode("password", "UTF-8") + "=" + URLEncoder.encode(password, "UTF-8")
-
-    val mURL = URL("http://192.168.10.51:8080/")
+    val mURL = URL("http://$IPaddress:8080/")
     Log.d("get", "get start")
 
     with(mURL.openConnection() as HttpURLConnection) {
@@ -128,6 +134,8 @@ fun sendGetRequest(userName:String, password:String) {
             // convert response: String to a list of item objects (string)
             val resList = response.slice(2..response.length-3).split("}, {")
             // convert each item object (string) to a map
+            Log.d("smartFridge-res", "before-items : $fridgeItems")
+            var newFridgeItems = mutableListOf<MutableMap<String, String>>()
             for (i in resList) {
                 val listItem = i.split(", ")
 
@@ -147,9 +155,10 @@ fun sendGetRequest(userName:String, password:String) {
                     }
                     mapItem[mapKey] = mapValue
                 }
-                fridgeItems.add(mapItem)
+                newFridgeItems.add(mapItem)
             }
-            Log.d("smartFridge-res", "items : $fridgeItems")
+            fridgeItems = newFridgeItems
+            Log.d("smartFridge-res", "after-items : $fridgeItems")
         }
     }
 }
@@ -164,7 +173,14 @@ private fun ItemCard(FridgeItem: MutableMap<String, String>, modifier: Modifier 
         "green pepper" to painterResource(R.drawable.green_pepper),
         "orange" to painterResource(R.drawable.orange)
     )
-    Card(
+    val colorMap = mapOf(
+        "-1" to colorResource(id = R.color.expired),
+        "0" to colorResource(id = R.color.bad),
+        "1" to colorResource(id = R.color.white)
+    )
+    colorMap[FridgeItem[itemKeys[STATUS]]]?.let {
+        Card(
+        backgroundColor = it,
         modifier = modifier
             .padding(2.dp)
             .fillMaxWidth()
@@ -223,78 +239,31 @@ private fun ItemCard(FridgeItem: MutableMap<String, String>, modifier: Modifier 
             }
         }
     }
+    }
 }
 
 @Composable
 private fun ItemList(modifier: Modifier = Modifier) {
-    Column() {
-        LazyColumn {
-            items(fridgeItems) { fridgeItem ->
-                ItemCard(fridgeItem)
-            }
-        }
+    var fridgeItemsState by remember { mutableStateOf(fridgeItems) }
+    Box() {
         Button(
             onClick = {
                 get = true
                 Log.d("smartFridge-button", "set get = $get")
+                fridgeItemsState = fridgeItems
             },
             modifier = modifier
                 .fillMaxWidth()
                 .padding(12.dp)
+                .align(Alignment.BottomCenter)
+                .zIndex(zIndex = 1F)
         ) {
             Text(text = "Refresh")
         }
-    }
-
-}
-
-@Composable
-fun Greeting(name: String) {
-    Surface(color = Color.Gray) {
-        Text(text = "Helloaaa $name!", modifier = Modifier.padding(24.dp))
-    }
-}
-
-@Composable
-fun GreetingMessage(message: String, from: String) {
-    Column {
-        Text(
-            text = message,
-            fontSize = 36.sp,
-            modifier = Modifier
-                .fillMaxWidth()
-                .wrapContentWidth(Alignment.CenterHorizontally)
-                .padding(start = 16.dp, top = 16.dp)
-        )
-        Text(
-            text = from,
-            fontSize = 24.sp,
-            modifier = Modifier
-                .fillMaxWidth()
-                .wrapContentWidth(Alignment.CenterHorizontally)
-                .padding(start = 16.dp, end = 16.dp)
-        )
-    }
-}
-
-@Composable
-fun GreetingImage(message: String, from: String) {
-    val image = painterResource(R.drawable.androidparty)
-    Box{
-        Image(
-            painter = image,
-            contentDescription = null,
-            modifier = Modifier
-                .fillMaxHeight()
-                .fillMaxWidth(),
-            contentScale = ContentScale.Crop
-        )
-        GreetingMessage(message = message, from = from)
-        Button(onClick = {
-            get = true
-            Log.d("smartFridge-button", "set get = $get")
-        }) {
-            Text(text = "Refresh")
+        LazyColumn {
+            items(fridgeItemsState) { fridgeItem ->
+                ItemCard(fridgeItem)
+            }
         }
     }
 }
