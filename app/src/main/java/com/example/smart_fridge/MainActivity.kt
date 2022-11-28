@@ -73,7 +73,7 @@ fun sendPostRequest(userName:String, password:String) {
 
     var reqParam = URLEncoder.encode("username", "UTF-8") + "=" + URLEncoder.encode(userName, "UTF-8")
     reqParam += "&" + URLEncoder.encode("password", "UTF-8") + "=" + URLEncoder.encode(password, "UTF-8")
-    val mURL = URL("http://192.168.137.1:8080/")
+    val mURL = URL("http://192.168.10.51:8080/")
 
     with(mURL.openConnection() as HttpURLConnection) {
         // optional default is GET
@@ -104,7 +104,7 @@ fun sendGetRequest(userName:String, password:String) {
 //    var reqParam = URLEncoder.encode("username", "UTF-8") + "=" + URLEncoder.encode(userName, "UTF-8")
 //    reqParam += "&" + URLEncoder.encode("password", "UTF-8") + "=" + URLEncoder.encode(password, "UTF-8")
 
-    val mURL = URL("http://192.168.137.1:8080/")
+    val mURL = URL("http://192.168.10.51:8080/")
     Log.d("get", "get start")
 
     with(mURL.openConnection() as HttpURLConnection) {
@@ -160,7 +160,9 @@ private fun ItemCard(FridgeItem: MutableMap<String, String>, modifier: Modifier 
         "apple" to painterResource(R.drawable.apple),
         "banana" to painterResource(R.drawable.banana),
         "tomato" to painterResource(R.drawable.tomato),
-        "broccoli" to painterResource(R.drawable.broccoli)
+        "broccoli" to painterResource(R.drawable.broccoli),
+        "green pepper" to painterResource(R.drawable.green_pepper),
+        "orange" to painterResource(R.drawable.orange)
     )
     Card(
         modifier = modifier
