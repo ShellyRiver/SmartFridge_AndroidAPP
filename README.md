@@ -1,6 +1,8 @@
 # SmartFridge_AndroidAPP
 CS 598 course project - Smart Fridge - Android APP
 
+To receive information of food items from the server, change the IPaddress and port variables according to the SmartFridge_HTTP_server. 
+
 The freshness is represented by the background color of the food item:
 - white: fresh
 - yellow: going bad
