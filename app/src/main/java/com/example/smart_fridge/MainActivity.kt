@@ -54,7 +54,10 @@ class MainActivity : ComponentActivity() {
     }
 }
 
-val IPaddress = "192.168.137.1"
+// NEED TO CHANGE:
+// change the ip address and port according to the server
+val IPaddress = "192.168.10.51"
+val port = "8080"
 
 var get = true
 var fridgeItems: MutableList<MutableMap<String, String>> = mutableListOf()   // the list of all items in the fridge
@@ -78,11 +81,12 @@ var thread = Thread {
     }
 }
 
+// to be implemented
 fun sendPostRequest(userName:String, password:String) {
 
     var reqParam = URLEncoder.encode("username", "UTF-8") + "=" + URLEncoder.encode(userName, "UTF-8")
     reqParam += "&" + URLEncoder.encode("password", "UTF-8") + "=" + URLEncoder.encode(password, "UTF-8")
-    val mURL = URL("http://$IPaddress:8080/")
+    val mURL = URL("http://$IPaddress:$port/")
 
     with(mURL.openConnection() as HttpURLConnection) {
         // optional default is GET
@@ -108,9 +112,10 @@ fun sendPostRequest(userName:String, password:String) {
     }
 }
 
+// send get request to the server to obtain the information of items in the fridge
 fun sendGetRequest() {
 
-    val mURL = URL("http://$IPaddress:8080/")
+    val mURL = URL("http://$IPaddress:$port/")
     Log.d("get", "get start")
 
     with(mURL.openConnection() as HttpURLConnection) {
